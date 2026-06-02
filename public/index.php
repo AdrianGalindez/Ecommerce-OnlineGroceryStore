@@ -13,7 +13,7 @@ loadEnv(__DIR__ . '/../.env');
 
 // 2. CONFIGURACIONES BASE
 require_once __DIR__ . '/../Config/database.php';
-require_once __DIR__ . '/../Config/App.php';
+require_once __DIR__ . '/../Config/app.php';
 require_once __DIR__ . '/../Config/session.php';
 
 // 3. INICIAR SESIÓN
