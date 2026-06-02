@@ -6,26 +6,28 @@
 
 function loadEnv($path)
 {
+    <?php
+
+function loadEnv($path)
+{
     if (!file_exists($path)) {
-        throw new Exception("Archivo .env no encontrado");
+        return;
     }
 
     $lines = file($path, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
 
     foreach ($lines as $line) {
-        // Ignorar comentarios
+
         if (str_starts_with(trim($line), '#')) {
             continue;
         }
 
-        // Separar clave=valor
+        if (!str_contains($line, '=')) {
+            continue;
+        }
+
         [$key, $value] = explode('=', $line, 2);
 
-        $key = trim($key);
-        $value = trim($value);
-
-        // Guardar en $_ENV y $_SERVER
-        $_ENV[$key] = $value;
-        $_SERVER[$key] = $value;
+        $_ENV[trim($key)] = trim($value);
     }
 }
