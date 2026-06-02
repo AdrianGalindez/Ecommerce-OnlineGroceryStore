@@ -18,11 +18,11 @@ class Database {
     public function __construct(){
         $this->loadEnv();
 
-        $this->host = $_ENV['DB_HOST'] ?? 'localhost';
-        $this->port = $_ENV['DB_PORT'] ?? '3306';
-        $this->db   = $_ENV['DB_NAME'] ?? 'ecommerce_online_grocery_store';
-        $this->user = $_ENV['DB_USER'] ?? 'root';
-        $this->pass = $_ENV['DB_PASS'] ?? '';
+        $this->host = $_ENV['DB_HOST'] ?? getenv('DB_HOST');
+        $this->port = $_ENV['DB_PORT'] ?? getenv('DB_PORT');
+        $this->db   = $_ENV['DB_NAME'] ?? getenv('DB_NAME');
+        $this->user = $_ENV['DB_USER'] ?? getenv('DB_USER');
+        $this->pass = $_ENV['DB_PASS'] ?? getenv('DB_PASS');
     }
 
     /**
