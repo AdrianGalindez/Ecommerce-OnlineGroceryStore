@@ -3,7 +3,6 @@
 /**
  * Carga manual del archivo .env
  */
-
 function loadEnv($path)
 {
     if (!file_exists($path)) {
@@ -24,8 +23,10 @@ function loadEnv($path)
 
         [$key, $value] = explode('=', $line, 2);
 
-        $_ENV[trim($key)] = trim($value);
+        $key = trim($key);
+        $value = trim($value);
 
-        putenv(trim($key) . '=' . trim($value));
+        $_ENV[$key] = $value;
+        putenv("$key=$value");
     }
 }
