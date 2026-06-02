@@ -1,8 +1,5 @@
 <?php
 
-/**
- * Clase Database: lee credenciales del .env y entregar una conexión.
- */
 class Database {
 
     private $host;
@@ -11,101 +8,43 @@ class Database {
     private $user;
     private $pass;
 
-    /**
-     * Al instanciarse, carga el .env y asigna
-     * cada credencial a su propiedad correspondiente.
-     */
     public function __construct(){
-        $this->loadEnv();
 
-        $this->host = $_ENV['DB_HOST'] ?? getenv('DB_HOST');
-        $this->port = $_ENV['DB_PORT'] ?? getenv('DB_PORT');
-        $this->db   = $_ENV['DB_NAME'] ?? getenv('DB_NAME');
-        $this->user = $_ENV['DB_USER'] ?? getenv('DB_USER');
-        $this->pass = $_ENV['DB_PASS'] ?? getenv('DB_PASS');
-    }
+        // No dependas de loadEnv aquí (Render-safe)
+        $this->host = getenv('DB_HOST') ?: null;
+        $this->port = getenv('DB_PORT') ?: '3306';
+        $this->db   = getenv('DB_NAME') ?: null;
+        $this->user = getenv('DB_USER') ?: null;
+        $this->pass = getenv('DB_PASS') ?: null;
 
-    /**
-     * Lee el archivo .env línea por línea y carga
-     * cada variable en $_ENV y en el entorno del proceso (putenv).
-     * Ignora líneas vacías y comentarios (#).
-     */
-    private function loadEnv(){
-
-        // Ruta absoluta al .env — sube un nivel desde Config/ hasta la raíz
-        $envFile = __DIR__ . '/../.env';
-
-        // Si no existe el .env, detenemos todo con un mensaje claro
-        if(!file_exists($envFile)){
-            return;
-        }
-
-        // Leer todas las líneas ignorando vacías
-        $lines = file($envFile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
-
-        foreach($lines as $line){
-
-            // Saltar líneas que son comentarios
-            if(str_starts_with(trim($line), '#')){
-                continue;
-            }
-
-            // Saltar líneas que no tienen el formato CLAVE=VALOR
-            if(strpos($line, '=') === false){
-                continue;
-            }
-
-            // Separar en exactamente dos partes: clave y valor
-            // El límite 2 evita romper valores que contengan '='
-            [$key, $value] = explode('=', $line, 2);
-
-            $key   = trim($key);
-            $value = trim($value);
-
-            // Eliminar comillas si el valor las tiene ("valor" o 'valor')
-            $value = trim($value, '"\'');
-
-            // Disponible tanto en $_ENV como en getenv()
-            $_ENV[$key] = $value;
-            putenv("$key=$value");
+        // 🔥 VALIDACIÓN CRÍTICA
+        if (!$this->host || !$this->db || !$this->user) {
+            throw new Exception("❌ Variables de base de datos no configuradas en Render");
         }
     }
 
-    /**
-     * Crea y retorna una conexión PDO configurada.
-     * Lanza un mensaje según el entorno:
-     *   - development: muestra el error técnico completo
-     *   - production:  muestra solo un mensaje genérico (sin exponer datos)
-     *
-     * PDO::FETCH_ASSOC como modo por defecto evita repetirlo
-     * en cada consulta de los modelos.
-     */
     public function connect(){
 
         try {
 
-            // DSN: cadena de conexión con host, puerto, BD y charset
             $dsn = "mysql:host={$this->host};port={$this->port};dbname={$this->db};charset=utf8mb4";
 
             $conn = new PDO($dsn, $this->user, $this->pass);
 
-            // Activar excepciones para capturar errores SQL fácilmente
             $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-
-            // Retornar arrays asociativos por defecto en todos los modelos
             $conn->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
 
             return $conn;
 
         } catch(PDOException $e){
 
-            // En desarrollo mostramos el error real para depurar rápido
-            if(($_ENV['APP_ENV'] ?? 'development') === 'development'){
+            $env = getenv('APP_ENV') ?: 'production';
+
+            if ($env === 'development') {
                 die('❌ Error de conexión: ' . $e->getMessage());
             }
 
-            // En producción ocultamos detalles técnicos al usuario final
-            die('❌ Error de conexión. Contacta al administrador.');
+            die('❌ Error de conexión a la base de datos');
         }
     }
 }
