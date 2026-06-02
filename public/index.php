@@ -1,32 +1,35 @@
 <?php
 
-/**
- * Front Controller — AnimaMarket
- * Único punto de entrada de la aplicación.
- * Toda URL pasa por aquí antes de llegar a cualquier controller, modelo o vista.
- * Flujo: Navegador → public/index.php → Router → Controller → Model → View
- */
-
-// 1. CARGAR VARIABLES DE ENTORNO (ANTES DE TODO)
+// ══════════════════════════════════════════════════
+// 1. ENV (PROTEGIDO)
+// ══════════════════════════════════════════════════
 require_once __DIR__ . '/../Config/env.php';
-loadEnv(__DIR__ . '/../.env');
 
-// 2. CONFIGURACIONES BASE
-require_once __DIR__ . '/../Config/database.php';
+if (file_exists(__DIR__ . '/../.env')) {
+    loadEnv(__DIR__ . '/../.env');
+}
+
+// ══════════════════════════════════════════════════
+// 2. CONFIG BASE
+// ══════════════════════════════════════════════════
 require_once __DIR__ . '/../Config/app.php';
+require_once __DIR__ . '/../Config/database.php';
 require_once __DIR__ . '/../Config/session.php';
 
-// 3. INICIAR SESIÓN
+// ══════════════════════════════════════════════════
+// 3. SESIÓN
+// ══════════════════════════════════════════════════
 session_start();
 
+// ══════════════════════════════════════════════════
 // 4. HELPERS
+// ══════════════════════════════════════════════════
 require_once __DIR__ . '/../Helpers/Auth.php';
 
-
 // ══════════════════════════════════════════════════
-// MANEJO DE ERRORES
+// 5. ERRORES
 // ══════════════════════════════════════════════════
-if (APP_ENV === 'development') {
+if (defined('APP_ENV') && APP_ENV === 'development') {
     ini_set('display_errors', 1);
     error_reporting(E_ALL);
 } else {
@@ -34,10 +37,8 @@ if (APP_ENV === 'development') {
     error_reporting(0);
 }
 
-
 // ══════════════════════════════════════════════════
-// AUTOLOADER
-// Busca clases en Controller/ y Model/ automáticamente
+// 6. AUTOLOADER
 // ══════════════════════════════════════════════════
 spl_autoload_register(function ($class) {
     $paths = [
@@ -53,9 +54,10 @@ spl_autoload_register(function ($class) {
     }
 });
 
-
 // ══════════════════════════════════════════════════
-// DESPACHO VÍA ROUTER
+// 7. ROUTER
 // ══════════════════════════════════════════════════
 require_once __DIR__ . '/../Routes/Router.php';
-(new Router())->dispatch();
+
+$router = new Router();
+$router->dispatch();
