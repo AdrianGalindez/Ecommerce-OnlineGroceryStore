@@ -17,7 +17,7 @@ function env($key, $default = null) {
 // ══════════════════════════════════════════════════
 // 2. URL BASE
 // ══════════════════════════════════════════════════
-define('BASE_URL', env('APP_URL', 'http://localhost:8000/'));
+define('BASE_URL', env('APP_URL', 'hhttps://ecommerce-onlinegrocerystore-2.onrender.com/'));
 
 // ══════════════════════════════════════════════════
 // 3. NOMBRE DE LA APP
